@@ -1,0 +1,50 @@
+import java.text.SimpleDateFormat
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        applicationId "net.novafactory.example.gradle.buildtypes"
+        minSdkVersion 15
+        targetSdkVersion 20
+        versionCode 1
+        versionName "1.0"
+    }
+    signingConfigs {
+        release {
+            storeFile file("./keystore/test.keystore")
+            storePassword "testtest"
+            keyAlias "nova"
+            keyPassword "testtest"
+        }
+    }
+    buildTypes {
+        debug {
+            buildConfigField "setting.DeployPhase", "DEPLOY_PHASE", "setting.DeployPhase.Debug"
+        }
+        stage {
+            buildConfigField "setting.DeployPhase", "DEPLOY_PHASE", "setting.DeployPhase.Stage"
+        }
+        release {
+            buildConfigField "setting.DeployPhase", "DEPLOY_PHASE", "setting.DeployPhase.Release"
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+    applicationVariants.all { variant ->
+        def df = new SimpleDateFormat("yyMMdd")
+        df.setTimeZone(TimeZone.getDefault())
+        def file = variant.outputFile
+        def newName = "${df.format(new Date())}_BuildTypesTestApp_${defaultConfig.versionName}(${defaultConfig.versionCode})"
+        newName += "_${variant.buildType.name}.apk"
+        variant.outputFile = new File(file.parent, newName);
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
